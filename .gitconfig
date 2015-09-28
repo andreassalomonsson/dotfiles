@@ -1,0 +1,16 @@
+[user]
+	name = Andreas Salomonsson
+	email = andreasalomonsson@gmail.com
+[core]
+	editor = vim
+[diff]
+	tool = vimdiff
+[merge]
+	tool = vimdiff
+[mergetool]
+	prompt = false
+[alias]
+	tree = log --graph --date-order --pretty=format:'%C(white bold dim)%h%Creset%C(blue)%d%Creset %C(white)%s%C(reset) (by %C(green dim)%an %C(red dim)%ar%C(reset))%Creset' --all
+[color]
+	ui = true
+[color "branch"]
