@@ -28,3 +28,5 @@ nnoremap <silent> <C-l> :<C-u>nohlsearch<CR><C-l>
 set t_Co=256
 set background=dark
 colorscheme solarized
+autocmd VimEnter * NERDTree
+autocmd VimEnter * wincmd p
