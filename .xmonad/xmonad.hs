@@ -4,10 +4,10 @@ import XMonad.Hooks.SetWMName
 import XMonad.Layout.ShowWName
 import qualified Data.Map as M
 
-main = xmonad $ defaultConfig
+main = xmonad $ def
     { startupHook = setWMName "LG3D"
-    , layoutHook = showWName $ layoutHook defaultConfig
-    , keys = myKeys <+> keys defaultConfig
+    , layoutHook = showWName $ layoutHook def
+    , keys = myKeys <+> keys def
     , normalBorderColor = "#073642"
     , focusedBorderColor = "#839496"
     }
