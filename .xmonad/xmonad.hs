@@ -8,6 +8,8 @@ main = xmonad $ defaultConfig
     { startupHook = setWMName "LG3D"
     , layoutHook = showWName $ layoutHook defaultConfig
     , keys = myKeys <+> keys defaultConfig
+    , normalBorderColor = "#073642"
+    , focusedBorderColor = "#839496"
     }
 
 myKeys conf@(XConfig { XMonad.modMask = modmask }) = M.fromList
