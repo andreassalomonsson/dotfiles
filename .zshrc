@@ -30,5 +30,10 @@ zstyle ':completion:*:default' list-prompt '%S%M matches%s'
 zstyle ':completion:*:defualt' menu 'select=0'
 zstyle ':completion::*:::' completer _complete _prefix
 
+# Enable ESC v to edit command line
+autoload -U edit-command-line
+zle -N edit-command-line
+bindkey -M vicmd v edit-command-line
+
 . ~/.zsh/terminal.zsh
 
