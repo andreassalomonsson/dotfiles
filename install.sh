@@ -13,6 +13,6 @@ ln -s ${DIR}/.vimrc ~/.vimrc && \
 
 ln -s ${DIR}/.Xresources ~/.Xresources && \
 
-ln -s ${DIR}/.xmonad ~/.xmonad && \
+rm -rf ~/.xmonad; ln -s ${DIR}/.xmonad ~/.xmonad && \
 
 ln -s ${DIR}/.gitconfig ~/.gitconfig
