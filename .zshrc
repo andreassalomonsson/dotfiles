@@ -22,6 +22,7 @@ setopt hist_find_no_dups
 setopt prompt_subst
 PS1=$'%{\e[01;32m%n@%m%}%{\e[0m:%}%{\e[01;34m%~%}\n%(?..%{\e[01;31m%}[%?])%# %{\e[0m%}'
 PS4='+%N:%i:%_>'
+RPROMPT=""
 
 # completion
 zmodload zsh/complist
