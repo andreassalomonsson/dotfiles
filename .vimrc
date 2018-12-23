@@ -1,5 +1,16 @@
+if empty(glob('~/.vim/autoload/plug.vim'))
+  silent !curl -fLo ~/.vim/autoload/plug.vim --create-dirs
+    \ https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+  autocmd VimEnter * PlugInstall --sync | source $MYVIMRC
+endif
+call plug#begin()
+Plug 'scrooloose/nerdtree', { 'tag': '5.0.0' }
+Plug 'altercation/vim-colors-solarized'
+Plug 'godlygeek/tabular', { 'tag': '1.0.0' }
+Plug 'tpope/vim-surround', { 'tag': 'v2.1' }
+call plug#end()
+
 set nocompatible
-execute pathogen#infect()
 set backspace=indent,eol,start
 set history=50
 set ruler
