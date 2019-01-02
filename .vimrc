@@ -25,6 +25,7 @@ set shiftwidth=4
 set expandtab
 set wildmenu
 set wildmode=list:longest,full
+set paste
 syntax on
 filetype plugin indent on
 augroup vimrcEx
