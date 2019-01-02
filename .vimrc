@@ -8,6 +8,7 @@ Plug 'scrooloose/nerdtree', { 'tag': '5.0.0' }
 Plug 'altercation/vim-colors-solarized'
 Plug 'godlygeek/tabular', { 'tag': '1.0.0' }
 Plug 'tpope/vim-surround', { 'tag': 'v2.1' }
+Plug 'vim-syntastic/syntastic', { 'tag': '3.9.0' }
 call plug#end()
 
 set nocompatible
