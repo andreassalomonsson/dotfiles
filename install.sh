@@ -23,3 +23,7 @@ command -v xmonad > /dev/null 2>&1 && {
 command -v i3 > /dev/null 2>&1 && {
     rm -rf ~/.config/i3; ln -s ${DIR}/.config/i3 ~/.config/i3
 }
+
+command -v chromium-browser > /dev/null 2>&1 && {
+    sudo cp chrome-extensions-policy.json /etc/chromium-browser/policies/managed/
+}
