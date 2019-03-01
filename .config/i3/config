@@ -148,3 +148,5 @@ bindsym XF86MonBrightnessDown exec --no-startup-id xbacklight -dec 10
 
 exec --no-startup-id setxkbmap -option caps:swapescape,lv3:ralt_switch
 exec --no-startup-id xsetroot -solid "#002b36"
+
+hide_edge_borders smart
