@@ -17,6 +17,7 @@ setopt extended_history
 setopt append_history
 setopt share_history
 setopt hist_find_no_dups
+setopt hist_ignore_space
 
 # prompts
 setopt prompt_subst
@@ -38,3 +39,4 @@ bindkey -M vicmd v edit-command-line
 
 . ~/.zsh/terminal.zsh
 
+export JQ_COLORS="1;32:0;39:0;39:0;39:0;32:1;39:1;39"
