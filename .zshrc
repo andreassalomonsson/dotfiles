@@ -21,7 +21,7 @@ setopt hist_ignore_space
 
 # prompts
 setopt prompt_subst
-PS1=$'%{\e[01;32m%n@%m%}%{\e[0m:%}%{\e[01;34m%~%}\n%(?..%{\e[01;31m%}[%?])%# %{\e[0m%}'
+PS1=$'%{\e[01;92m%n@%m%}%{\e[0m:%}%{\e[01;94m%~%}\n%(?..%{\e[01;91m%}[%?])%# %{\e[0m%}'
 PS4='+%N:%i:%_>'
 RPROMPT=""
 
