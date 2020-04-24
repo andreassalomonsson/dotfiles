@@ -8,6 +8,8 @@ export KEYTIMEOUT=1
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
 alias ll='ls -alFh'
+alias xcopy='xclip -selection clipboard'
+alias xpaste='xclip -selection clipboard -out'
 
 # history
 HISTFILE=~/.zsh_history
