@@ -34,6 +34,7 @@ filetype plugin indent on
 augroup vimrcEx
 au!
 autocmd FileType text setlocal textwidth=78
+autocmd FileType yaml setlocal tabstop=2 softtabstop=2 shiftwidth=2 expandtab indentkeys-=0# indentkeys-=<:>
 autocmd BufReadPost *
   \ if line("'\"") > 1 && line("'\"") <= line("$") |
   \   exe "normal! g`\"" |
