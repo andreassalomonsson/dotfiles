@@ -42,6 +42,7 @@ autocmd BufReadPost *
 augroup END
 runtime macros/matchit.vim
 nnoremap <silent> <C-l> :<C-u>nohlsearch<CR><C-l>
+nnoremap <silent> <C-n> :NERDTreeToggle<CR>
 set t_Co=256
 set background=dark
 colorscheme solarized
