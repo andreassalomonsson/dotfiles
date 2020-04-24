@@ -43,3 +43,31 @@ bindkey -M vicmd v edit-command-line
 . ~/.zsh/terminal.zsh
 
 export JQ_COLORS="1;32:0;39:0;39:0;39:0;32:1;39:1;39"
+
+if [ $commands[kubectl] ]; then
+    alias k=kubectl
+
+    function kc {
+        local new_context="$1"
+        if [[ -z "$new_context" ]]; then
+          new_context=$(kubectl config get-contexts | fzf --header-lines=1 | cut -c 2- | sed -e 's/^[[:space:]]*//' | cut -f1 -d' ')
+        fi
+        if [[ -n "$new_context" ]]; then
+          kubectl config use-context "$new_context"
+        else
+          echo "Aborting."
+        fi
+    }
+
+    function kns  {
+        local new_namespace="$1"
+        if [[ -z "$new_namespace" ]]; then
+          new_namespace=$(kubectl get namespaces --output=custom-columns=:.metadata.name \
+              | fzf --select-1 --preview "kubectl --namespace {} get pods")
+        fi
+        if [[ -n "$new_namespace" ]]; then
+            echo "Setting namespace to $new_namespace"
+            kubectl config set-context "$(kubectl config current-context)" --namespace="$new_namespace"
+        fi
+    }
+fi
