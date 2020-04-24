@@ -71,3 +71,8 @@ if [ $commands[kubectl] ]; then
         fi
     }
 fi
+
+if [ $commands[aws_completer] ]; then
+    autoload bashcompinit && bashcompinit
+    complete -C '/usr/local/bin/aws_completer' aws
+fi
