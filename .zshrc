@@ -76,3 +76,7 @@ if [ $commands[aws_completer] ]; then
     autoload bashcompinit && bashcompinit
     complete -C '/usr/local/bin/aws_completer' aws
 fi
+
+if [ -f "$HOME/.cargo/env" ]; then
+    source $HOME/.cargo/env
+fi
