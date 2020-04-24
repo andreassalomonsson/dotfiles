@@ -10,6 +10,8 @@ Plug 'godlygeek/tabular', { 'tag': '1.0.0' }
 Plug 'tpope/vim-surround', { 'tag': 'v2.1' }
 Plug 'dense-analysis/ale', { 'tag': 'v2.6.0' }
 Plug 'leafgarland/typescript-vim'
+Plug 'martinda/Jenkinsfile-vim-syntax'
+Plug 'mustache/vim-mustache-handlebars'
 call plug#end()
 
 set nocompatible
