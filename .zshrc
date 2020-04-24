@@ -11,8 +11,8 @@ alias ll='ls -alFh'
 
 # history
 HISTFILE=~/.zsh_history
-HISTSIZE=1000
-SAVEHIST=1000
+HISTSIZE=10000
+SAVEHIST=10000
 setopt extended_history
 setopt append_history
 setopt share_history
