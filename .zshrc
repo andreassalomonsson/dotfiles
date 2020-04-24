@@ -76,3 +76,5 @@ fi
     autoload bashcompinit && bashcompinit
     complete -C '/usr/local/bin/aws_completer' aws
 }
+
+[ -f "$HOME/.cargo/env" ] && source $HOME/.cargo/env
