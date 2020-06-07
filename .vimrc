@@ -12,6 +12,7 @@ Plug 'dense-analysis/ale', { 'tag': 'v2.6.0' }
 Plug 'leafgarland/typescript-vim'
 Plug 'martinda/Jenkinsfile-vim-syntax'
 Plug 'mustache/vim-mustache-handlebars'
+Plug 'preservim/nerdcommenter', { 'tag': '2.5.2' }
 call plug#end()
 
 set nocompatible
