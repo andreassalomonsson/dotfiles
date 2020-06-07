@@ -34,6 +34,8 @@ setopt complete_in_word
 zstyle ':completion:*:default' list-prompt '%S%M matches%s'
 zstyle ':completion:*:defualt' menu 'select=0'
 zstyle ':completion::*:::' completer _complete _prefix
+autoload -Uz compinit
+compinit
 
 # Enable ESC v to edit command line
 autoload -U edit-command-line
