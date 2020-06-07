@@ -27,3 +27,6 @@ colors:
     magenta: '#6c71c4'
     cyan: '#93a1a1'
     white: '#fdf6e3'
+
+shell:
+  program: /usr/bin/tmux
