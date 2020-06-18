@@ -7,6 +7,7 @@ export KEYTIMEOUT=1
 # aliases
 alias ls='ls --color=auto'
 alias grep='grep --color=auto'
+alias ip='ip --color=auto'
 alias ll='ls -alFh'
 alias xcopy='xclip -selection clipboard'
 alias xpaste='xclip -selection clipboard -out'
