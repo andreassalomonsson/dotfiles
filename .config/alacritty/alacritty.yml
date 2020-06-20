@@ -29,4 +29,6 @@ colors:
     white: '#fdf6e3'
 
 shell:
-  program: /usr/bin/tmux
+  program: /usr/bin/env
+  args:
+  - tmux
