@@ -1,0 +1,13 @@
+#compdef _gimme-aws-creds gimme-aws-creds
+
+function _gimme-aws-creds {
+  _arguments \
+    "-p[gimme-aws-creds profile]:profile:->profiles" \
+    "--profile[gimme-aws-creds profile]:profile:->profiles"
+  case "$state" in
+    profiles)
+      _alternative \
+        "args:gimme-aws-creds profiles:($(gimme-aws-creds --action-list-profiles | grep '^\[.*\]$' | tr -d '[]'))"
+      ;;
+  esac
+}

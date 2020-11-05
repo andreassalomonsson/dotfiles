@@ -1,0 +1,7 @@
+#compdef _kns kns
+
+function _kns {
+  _alternative \
+    "args:kubernetes namespaces:($(kubectl get namespaces --output=custom-columns=:.metadata.name --no-headers))"
+}
+

@@ -1,0 +1,6 @@
+#compdef _kc kc
+
+function _kc {
+  _alternative \
+    "args:kubernetes contexts:($(kubectl config get-contexts --output=name))"
+}

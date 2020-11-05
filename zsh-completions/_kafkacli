@@ -1,0 +1,13 @@
+#compdef _kafkacli kafkacli
+
+function _kafkacli {
+  _arguments '1: :->cluster' '2: :->script'
+    case $state in
+      cluster)
+        _describe 'command' "($(kafkacli zsh-completion 1))"
+        ;;
+      script)
+        _describe 'command' "($(kafkacli zsh-completion 2))"
+        ;;
+  esac
+}

@@ -1,0 +1,6 @@
+#compdef _awssonic awssonic
+
+function _awssonic {
+  _alternative \
+    "args:aws profiles:($(aws configure list-profiles))"
+}
