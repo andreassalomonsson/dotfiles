@@ -75,6 +75,24 @@ if [ $commands[kubectl] ]; then
     }
 fi
 
+if [ $commands[aws] ]; then
+    function awssonic  {
+        local new_aws_profile="$1"
+        if [[ -z "$new_aws_profile" ]]; then
+            new_aws_profile=$(env --unset=AWS_PROFILE aws configure list-profiles \
+                | fzf --header "AWS profile")
+        fi
+        if [[ -z "$new_aws_profile" ]]; then
+            return
+        fi
+        if ! aws --profile "$new_aws_profile" sts get-caller-identity > /dev/null 2>&1; then
+            expect-gimme-aws-creds "$new_aws_profile" "$(bwpass 'discovery sso')"
+        fi
+        export AWS_PROFILE="$new_aws_profile"
+        aws sts get-caller-identity
+    }
+fi
+
 if [ $commands[aws_completer] ]; then
     autoload bashcompinit && bashcompinit
     complete -C '/usr/local/bin/aws_completer' aws

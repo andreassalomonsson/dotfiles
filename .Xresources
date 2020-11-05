@@ -58,3 +58,5 @@
 
 xterm*faceName: Monospace
 xterm*faceSize: 11
+
+Xcursor.theme: Adwaita
