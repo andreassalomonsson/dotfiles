@@ -256,6 +256,21 @@ if [ $commands[kafkacli] ]; then
     compdef _kafkacli kafkacli
 fi
 
+if [ $commands[gimme-aws-creds] ]; then
+    _gimme-aws-creds() {
+      _arguments \
+        "-p[gimme-aws-creds profile]:profile:->profiles" \
+        "--profile[gimme-aws-creds profile]:profile:->profiles"
+      case "$state" in
+        profiles)
+          _alternative \
+            "args:gimme-aws-creds profiles:($(gimme-aws-creds --action-list-profiles | grep '^\[.*\]$' | tr -d '[]'))"
+          ;;
+      esac
+    }
+    compdef _gimme-aws-creds gimme-aws-creds
+fi
+
 if [ $commands[bw] ]; then
     bwpass() {
         bw_create_session() {
