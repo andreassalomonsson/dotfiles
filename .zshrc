@@ -136,6 +136,20 @@ if [ $commands[bw] ]; then
     }
 fi
 
+if [ $commands[nix-shell] ]; then
+    nixzsh()  {
+        nix-shell "$HOME/nix-shells/$1" --run zsh
+    }
+
+    _nixzsh() {
+        _alternative \
+            "args:nix-shells:($(find "$HOME/nix-shells" -maxdepth 1 -type f \
+                | xargs --max-args 1 basename))"
+    }
+
+    compdef _nixzsh nixzsh
+fi
+
 if [ -f "$HOME/.cargo/env" ]; then
     source $HOME/.cargo/env
 fi
