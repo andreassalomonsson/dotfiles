@@ -137,6 +137,125 @@ if [ $commands[aws] ]; then
     fi
 fi
 
+if [ $commands[aws] ] && [ $commands[kubectl] ]; then
+    ktoolscurl() {
+        cluster="$1"
+        if [[ -z "$cluster" ]]; then
+            cluster="$(find "$HOME/.kube" -maxdepth 1 -name '*' -exec basename {} \; \
+                | grep --extended-regexp 'test|prod' \
+                | fzf --header 'cluster')"
+        fi
+
+        namespace="$2"
+        if [[ -z "$namespace" ]]; then
+            namespace="$(KUBECONFIG="$HOME/.kube/$cluster" kubectl get namespaces \
+                    --output 'custom-columns=:.metadata.name' \
+                    --no-headers \
+                    | grep --extended-regexp 'test|prod' \
+                    | fzf --header 'namespace')"
+        fi
+
+        service="$3"
+        if [[ -z "$service" ]]; then
+            service="$(KUBECONFIG="$HOME/.kube/$cluster" kubectl get services \
+                    --namespace "$namespace" \
+                    --output 'custom-columns=:.metadata.name' \
+                    --no-headers \
+                    | fzf --header 'service')"
+        fi
+
+        port="$4"
+        if [[ -z "$port" ]]; then
+            port="$(KUBECONFIG="$HOME/.kube/$cluster" kubectl get services \
+                --namespace "$namespace" \
+                "$service" \
+                --output 'json' \
+                | jq '.spec.ports[].port' \
+                | fzf --header 'port')"
+        fi
+
+        tools_pod="$(KUBECONFIG="$HOME/.kube/$cluster" kubectl get pods \
+            --namespace "$namespace" \
+            --selector 'app=tools-pod' \
+            --output 'custom-columns=:.metadata.name' \
+            --no-headers \
+            | head --lines 1)"
+
+        request_path="$5"
+        if [[ -z "$request_path" ]]; then
+            request_path="/private/appConfig"
+        fi
+
+        KUBECONFIG="$HOME/.kube/$cluster" kubectl exec \
+            --namespace "$namespace" \
+            --stdin \
+            --tty \
+            "$tools_pod" \
+            -- \
+                curl "http://$service:$port$request_path"
+    }
+fi
+
+if [ $commands[aws] ] && [ $commands[kubectl] ]; then
+    ktoolspod() {
+        cluster="$1"
+        if [[ -z "$cluster" ]]; then
+            cluster="$(find "$HOME/.kube" -maxdepth 1 -name '*' -exec basename {} \; \
+                | grep --extended-regexp 'test|prod' \
+                | fzf --header 'cluster')"
+        fi
+
+        namespace="$2"
+        if [[ -z "$namespace" ]]; then
+            namespace="$(KUBECONFIG="$HOME/.kube/$cluster" kubectl get namespaces \
+                    --output 'custom-columns=:.metadata.name' \
+                    --no-headers \
+                    | grep --extended-regexp 'test|prod' \
+                    | fzf --header 'namespace')"
+        fi
+
+        tools_pod="$(KUBECONFIG="$HOME/.kube/$cluster" kubectl get pods \
+            --namespace "$namespace" \
+            --selector 'app=tools-pod' \
+            --output 'custom-columns=:.metadata.name' \
+            --no-headers \
+            | head --lines 1)"
+
+        if [[ -z "$3" ]]; then
+            KUBECONFIG="$HOME/.kube/$cluster" kubectl exec \
+                --namespace "$namespace" \
+                --stdin \
+                --tty \
+                "$tools_pod" \
+                -- \
+                    /bin/bash
+        else
+            KUBECONFIG="$HOME/.kube/$cluster" kubectl exec \
+                --namespace "$namespace" \
+                --stdin \
+                --tty \
+                "$tools_pod" \
+                -- \
+                    ${@:3}
+        fi
+    }
+fi
+
+if [ $commands[kafkacli] ]; then
+    _kafkacli() {
+        _arguments '1: :->cluster' '2: :->script'
+            case $state in
+                cluster)
+                    _describe 'command' "($(kafkacli zsh-completion 1))"
+                    ;;
+                script)
+                    _describe 'command' "($(kafkacli zsh-completion 2))"
+                    ;;
+            esac
+    }
+    compdef _kafkacli kafkacli
+fi
+
 if [ $commands[bw] ]; then
     bwpass() {
         bw_create_session() {
