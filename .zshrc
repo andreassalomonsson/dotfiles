@@ -80,6 +80,62 @@ if [ $commands[aws_completer] ]; then
     complete -C '/usr/local/bin/aws_completer' aws
 fi
 
+if [ $commands[bw] ]; then
+    bwpass() {
+        bw_create_session() {
+            if ! bw login --check > /dev/null 2>&1; then
+                bw login
+            elif ! (echo "" | bw list items > /dev/null 2>&1); then
+                bw unlock
+            else
+                echo "export BW_SESSION=\"$BW_SESSION\""
+            fi
+        }
+
+        bw_get_session() {
+            while true; do
+                session_output="$(bw_create_session)"
+                if [[ -n "$session_output" ]]; then
+                    break
+                fi
+            done
+            if [[ -n "$session_output" ]]; then
+                export BW_SESSION="$(echo "$session_output" \
+                    | grep "export" \
+                    | sed -r 's/.*BW_SESSION="(.*)".*/\1/g')"
+            fi
+        }
+
+        bw_get_session
+        unfunction bw_create_session
+        unfunction bw_get_session
+
+        if [[ -z "$1" ]]; then
+            result="$(bw list items)"
+        else
+            search_term="$1"
+            result="$(bw list items --search "$search_term")"
+        fi
+
+        if echo -E "$result" | grep --quiet 'Session key is invalid.'; then
+            unset BW_SESSION
+            result="$(echo -E "$result" | tail --lines +2)"
+        fi
+
+        number_of_results="$(echo -E "$result" | jq 'length')"
+
+        if [[ "$number_of_results" == "1" ]]; then
+            item_id="$(echo -E "$result" | jq --raw-output '.[0].id')"
+            bw get password "$item_id"
+        else
+            >&2 echo "Usage: $(basename "$0") [search_term]"
+            >&2 echo "Expected to find exactly on match, found $number_of_results."
+            >&2 echo ""
+            echo -E "$result" | jq --raw-output '.[] | .name + " (" + .login.uris[0].uri + ")"' >&2
+        fi
+    }
+fi
+
 if [ -f "$HOME/.cargo/env" ]; then
     source $HOME/.cargo/env
 fi
