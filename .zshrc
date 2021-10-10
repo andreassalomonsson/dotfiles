@@ -50,34 +50,70 @@ export JQ_COLORS="1;32:0;39:0;39:0;39:0;32:1;39:1;39"
 if [ $commands[kubectl] ]; then
     alias k=kubectl
 
-    function kc {
-        local new_context="$1"
-        if [[ -z "$new_context" ]]; then
-          new_context=$(kubectl config get-contexts | fzf --header-lines=1 | cut -c 2- | sed -e 's/^[[:space:]]*//' | cut -f1 -d' ')
+    kubeconfig() {
+        local new_config="$1"
+        if [[ -z "$new_config" ]]; then
+            new_config=$(find "$HOME/.kube" -maxdepth 1 -type f \
+                | xargs --max-args 1 basename \
+                | fzf --header 'Cluster')
         fi
-        if [[ -n "$new_context" ]]; then
-          kubectl config use-context "$new_context"
-        else
-          echo "Aborting."
+        if [[ -z "$new_config" ]]; then
+            return
         fi
+        if [[ ! -f "$HOME/.kube/$new_config" ]]; then
+            echo 1>&2 "ERROR: Kube config file not found $HOME/.kube/$new_config"
+            return
+        fi
+        export KUBECONFIG="$HOME/.kube/$new_config"
     }
 
-    function kns  {
-        local new_namespace="$1"
-        if [[ -z "$new_namespace" ]]; then
-          new_namespace=$(kubectl get namespaces --output=custom-columns=:.metadata.name \
-              | fzf --select-1 --preview "kubectl --namespace {} get pods")
-        fi
-        if [[ -n "$new_namespace" ]]; then
-            echo "Setting namespace to $new_namespace"
-            kubectl config set-context "$(kubectl config current-context)" --namespace="$new_namespace"
-        fi
+    _kubeconfig() {
+        _alternative \
+            "args:kubernetes contexts:($(find "$HOME/.kube" -maxdepth 1 -type f \
+                | xargs --max-args 1 basename))"
     }
+
+    compdef _kubeconfig kubeconfig
 fi
 
-if [ $commands[aws_completer] ]; then
-    autoload bashcompinit && bashcompinit
-    complete -C '/usr/local/bin/aws_completer' aws
+if [ $commands[aws] ]; then
+    awsprofile()  {
+        local new_aws_profile="$1"
+        if [[ -z "$new_aws_profile" ]]; then
+            new_aws_profile=$(env --unset=AWS_PROFILE aws configure list-profiles \
+                | fzf --header "AWS profile")
+        fi
+        if [[ -z "$new_aws_profile" ]]; then
+            return
+        fi
+        if ! aws --profile "$new_aws_profile" sts get-caller-identity > /dev/null 2>&1; then
+            bwpass 'discovery sso' > /dev/null  # exports BW_SESSION
+            expect-gimme-aws-creds "$new_aws_profile" "$(bwpass 'discovery sso')"
+        fi
+        export AWS_PROFILE="$new_aws_profile"
+        aws sts get-caller-identity
+    }
+
+    _awsprofile() {
+        _alternative \
+            "args:aws profiles:($(aws configure list-profiles))"
+    }
+
+    compdef _awsprofile awsprofile
+
+    awsecrlogin()  {
+        aws_account_id=$(aws sts get-caller-identity --query 'Account' --output text)
+        aws --region "eu-west-1" ecr get-login-password \
+            | docker login \
+                --username AWS \
+                --password-stdin \
+                "https://$aws_account_id.dkr.ecr.eu-west-1.amazonaws.com"
+    }
+
+    if [ $commands[aws_completer] ]; then
+        autoload bashcompinit && bashcompinit
+        complete -C "$(which aws_completer)" aws
+    fi
 fi
 
 if [ $commands[bw] ]; then
