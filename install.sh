@@ -21,22 +21,14 @@ command -v xmonad > /dev/null 2>&1 && {
         ln --symbolic "$DIR/.xmonad" ~/.xmonad
 }
 
-command -v i3 > /dev/null 2>&1 && {
-    rm --recursive --force ~/.config/i3; \
-        ln --symbolic "$DIR/.config/i3" ~/.config/i3
-}
-
-command -v alacritty > /dev/null 2>&1 && {
-    rm --recursive --force ~/.config/alacritty; \
-        ln --symbolic "$DIR/.config/alacritty" ~/.config/alacritty
-}
-
-command -v htop > /dev/null 2>&1 && {
-    rm --recursive --force ~/.config/htop; \
-        ln --symbolic "$DIR/.config/htop" ~/.config/htop
-}
-
 (command -v chromium > /dev/null 2>&1 || command -v chromium-browser > /dev/null 2>&1) && {
     sudo mkdir --parents /etc/chromium/policies/managed && \
         sudo cp "$DIR/chrome-extensions-policy.json" /etc/chromium/policies/managed/
 }
+
+for cmd in alacritty i3 htop yamllint; do
+    command -v "$cmd" > /dev/null 2>&1 && {
+        rm --recursive --force "$HOME/.config/$cmd"; \
+            ln --symbolic "$DIR/.config/$cmd" "$HOME/.config/$cmd"
+    }
+done
