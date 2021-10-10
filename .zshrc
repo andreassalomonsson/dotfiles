@@ -271,6 +271,105 @@ if [ $commands[gimme-aws-creds] ]; then
     compdef _gimme-aws-creds gimme-aws-creds
 fi
 
+if [ $commands[aws] ]; then
+    esprofile() {
+        cluster_name="$1"
+        aws_profile="prod-core-team"
+        tools_pod=""
+        case "$cluster_name" in
+            us1-test-content)
+                aws_region="eu-west-1"
+                kubernetes_cluster="eu-west-1-test-v2"
+                namespace="sonic-test"
+                aws_profile="test-core-team"
+                cluster_name="test-content"
+                ;;
+            ap2-test-*)
+                aws_region="ap-southeast-1"
+                kubernetes_cluster="ap-southeast-1-test-v1"
+                namespace="ap2-test"
+                aws_profile="test-core-team"
+                ;;
+            us1-*)
+                aws_region="us-east-1"
+                kubernetes_cluster="us-east-1-prod-v1"
+                namespace="us1-prod"
+                ;;
+            ap1-*)
+                aws_region="ap-northeast-1"
+                kubernetes_cluster="ap-northeast-1-prod-v2"
+                namespace="ap1-prod"
+                ;;
+            ap2-*)
+                aws_region="ap-southeast-1"
+                kubernetes_cluster="ap-southeast-1-prod-v1"
+                namespace="ap2-prod"
+                ;;
+            eu*)
+                aws_region="eu-west-1"
+                kubernetes_cluster="eu-west-1-prod-v1"
+                namespace="eu1-prod"
+                ;;
+            localhost)
+                tools_pod="localhost"
+                namespace="localhost"
+                endpoint="http://localhost:9200"
+                ;;
+            *)
+                aws_region="eu-west-1"
+                kubernetes_cluster="eu-west-1-test-v2"
+                namespace="sonic-test"
+                ;;
+        esac
+
+        if [[ "$tools_pod" != "localhost" ]]; then
+            export KUBECONFIG="$HOME/.kube/$kubernetes_cluster"
+            export AWS_PROFILE="$aws_profile"
+
+            endpoint="https://$(aws --region "$aws_region" \
+                es describe-elasticsearch-domains \
+                --domain-names "$cluster_name" \
+                --output text \
+                --query 'DomainStatusList[0].Endpoints.vpc')"
+
+            tools_pod=$(kubectl get pods \
+                --namespace "$namespace" \
+                --selector 'app=tools-pod' \
+                --output jsonpath='{.items[0].metadata.name}')
+        fi
+
+        export DISCOVERY_TOOLS_POD="$tools_pod"
+        export DISCOVERY_TOOLS_POD_NAMESPACE="$namespace"
+        export ES_ENDPOINT="$endpoint"
+    }
+
+    _esprofile() {
+      _alternative \
+        "args:elasticsearch cluster:(\
+        localhost \
+        eu1-prod-content-es7 \
+        eu1-prod-shared \
+        eu2-prod-content-es7 \
+        eu2-prod-shared \
+        eu3-prod-content \
+        eu3-prod-content-es7 \
+        eu3-prod-shared \
+        us1-prod-content-es7 \
+        us1-prod-shared \
+        ap2-prod-content-es7 \
+        ap2-prod-shared \
+        sonic-test-content \
+        sonic-test-shared \
+        test-content \
+        eu1-test-content \
+        us1-test-content \
+        ap2-test-content \
+        ap2-test-shared \
+        test-shared)"
+    }
+    compdef _esprofile esprofile
+fi
+
 if [ $commands[bw] ]; then
     bwpass() {
         bw_create_session() {
