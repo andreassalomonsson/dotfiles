@@ -31,6 +31,11 @@ command -v alacritty > /dev/null 2>&1 && {
         ln --symbolic "$DIR/.config/alacritty" ~/.config/alacritty
 }
 
+command -v htop > /dev/null 2>&1 && {
+    rm --recursive --force ~/.config/htop; \
+        ln --symbolic "$DIR/.config/htop" ~/.config/htop
+}
+
 (command -v chromium > /dev/null 2>&1 || command -v chromium-browser > /dev/null 2>&1) && {
     sudo mkdir --parents /etc/chromium/policies/managed && \
         sudo cp "$DIR/chrome-extensions-policy.json" /etc/chromium/policies/managed/
