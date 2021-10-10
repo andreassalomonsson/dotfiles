@@ -28,6 +28,9 @@ colors:
     cyan: '#93a1a1'
     white: '#fdf6e3'
 
+font:
+  size: 8
+
 shell:
   program: /usr/bin/env
   args:
