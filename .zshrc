@@ -24,10 +24,31 @@ setopt hist_ignore_space
 setopt hist_reduce_blanks
 
 # prompts
+autoload -U colors && colors
 setopt prompt_subst
 PS1=$'%{\e[01;92m%n@%m%}%{\e[0m:%}%{\e[01;94m%~%}\n%(?..%{\e[01;91m%}[%?])%# %{\e[0m%}'
 PS4='+%N:%i:%_>'
-RPROMPT=""
+
+RPROMPT='$(rprompt)'
+function rprompt {
+    if [[ -z "$AWS_PROFILE" && -z "$KUBECONFIG" ]]; then
+        return
+    fi
+    if [[ "$AWS_PROFILE" =~ "prod" && ! "$AWS_PROFILE" =~ "readonly" ]]; then
+        aws_profile_color="red"
+    else
+        aws_profile_color="green"
+    fi
+    if [[ "$KUBECONFIG" =~ "prod" ]]; then
+        kube_config_color="red"
+    else
+        kube_config_color="green"
+    fi
+    if [[ ! -z "$KUBECONFIG" ]]; then
+        kube_config="$(basename $KUBECONFIG)"
+    fi
+    echo "( %{$fg[$aws_profile_color]%}$AWS_PROFILE%{$reset_color%} | %{$fg[$kube_config_color]%}$kube_config%{$reset_color%} )"
+}
 
 # completion
 zmodload zsh/complist
