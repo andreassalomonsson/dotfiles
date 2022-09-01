@@ -31,7 +31,7 @@ PS4='+%N:%i:%_>'
 
 RPROMPT='$(rprompt)'
 function rprompt {
-    if [[ -z "$AWS_PROFILE" && -z "$KUBECONFIG" ]]; then
+    if [[ -z "$AWS_PROFILE" && -z "$KUBECONFIG" && -z "$DISCO_NAMESPACE" ]]; then
         return
     fi
     if [[ "$AWS_PROFILE" =~ "prod" && ! "$AWS_PROFILE" =~ "readonly" ]]; then
@@ -47,7 +47,8 @@ function rprompt {
     if [[ ! -z "$KUBECONFIG" ]]; then
         kube_config="$(basename $KUBECONFIG)"
     fi
-    echo "( %{$fg[$aws_profile_color]%}$AWS_PROFILE%{$reset_color%} | %{$fg[$kube_config_color]%}$kube_config%{$reset_color%} )"
+    disco_profile="$DISCO_NAMESPACE:$DISCO_REALM:$DISCO_HTH"
+    echo "( %{$fg[$aws_profile_color]%}$AWS_PROFILE%{$reset_color%} | %{$fg[$kube_config_color]%}$kube_config%{$reset_color%} | %{$fg[green]%}$disco_profile%{$reset_color%} )"
 }
 
 # completion
@@ -274,21 +275,21 @@ fi
 if [ $commands[aws] ]; then
     esprofile() {
         cluster_name="$1"
-        aws_profile="prod-core-team"
+        aws_profile="prod-cep-metadata-api-team"
         tools_pod=""
         case "$cluster_name" in
             us1-test-content)
                 aws_region="eu-west-1"
                 kubernetes_cluster="eu-west-1-test-v2"
                 namespace="sonic-test"
-                aws_profile="test-core-team"
+                aws_profile="test-cep-metadata-api-team"
                 cluster_name="test-content"
                 ;;
-            ap2-test-*)
+            ap2-test-*|ap-southeast-1-test-search)
                 aws_region="ap-southeast-1"
                 kubernetes_cluster="ap-southeast-1-test-v1"
                 namespace="ap2-test"
-                aws_profile="test-core-team"
+                aws_profile="test-cep-metadata-api-team"
                 ;;
             us1-*)
                 aws_region="us-east-1"
@@ -304,6 +305,18 @@ if [ $commands[aws] ]; then
                 aws_region="ap-southeast-1"
                 kubernetes_cluster="ap-southeast-1-prod-v1"
                 namespace="ap2-prod"
+                ;;
+            eu-int-*)
+                aws_region="eu-west-1"
+                kubernetes_cluster="workload-eu-west-1-int-v1"
+                namespace="eu-int"
+                aws_profile="test-cep-metadata-api-team"
+                ;;
+            eu-west-1-test-search)
+                aws_region="eu-west-1"
+                namespace="eu1-test"
+                kubernetes_cluster="eu-west-1-test-v2"
+                aws_profile="test-cep-metadata-api-team"
                 ;;
             eu*)
                 aws_region="eu-west-1"
@@ -347,27 +360,224 @@ if [ $commands[aws] ]; then
       _alternative \
         "args:elasticsearch cluster:(\
         localhost \
-        eu1-prod-content-es7 \
-        eu1-prod-shared \
-        eu2-prod-content-es7 \
-        eu2-prod-shared \
-        eu3-prod-content \
-        eu3-prod-content-es7 \
-        eu3-prod-shared \
-        us1-prod-content-es7 \
-        us1-prod-shared \
         ap2-prod-content-es7 \
+        eu1-prod-content-es7 \
+        eu2-prod-content-es7 \
+        eu3-prod-content-es7 \
+        us1-prod-content-es7 \
         ap2-prod-shared \
-        sonic-test-content \
-        sonic-test-shared \
-        test-content \
+        eu1-prod-shared \
+        eu2-prod-shared \
+        eu3-prod-shared \
+        us1-prod-shared \
+        eu-int-content-es7 \
+        ap2-test-content \
         eu1-test-content \
         us1-test-content \
-        ap2-test-content \
         ap2-test-shared \
-        test-shared)"
+        test-content \
+        test-shared \
+        ap-southeast-1-test-search \
+        eu-west-1-test-search \
+        sonic-test-content \
+        sonic-test-shared)"
     }
     compdef _esprofile esprofile
+fi
+
+if [ $commands[disco] ]; then
+    discoprofile() {
+        disco_namespace="${1%:*}"
+        disco_realm="${1#*:}"
+        disco_hth="${disco_realm#*_}"
+        if [[ -n "$disco_hth" ]]; then
+            disco_realm="${disco_realm%_*}"
+        else
+            disco_hth="se"
+        fi
+
+        disco_host="$disco_namespace.disco-api.com"
+        if [[ "$disco_namespace" == "eu-int" ]]; then
+            disco_host="eu.int.disco-api.com"
+        fi
+        if [[ "$disco_realm" == "dplay" ]]; then
+            if [[ "$disco_namespace" == "*-test" ]]; then
+                disco_hn="test.hashbuild.discoveryplus.com"
+            else
+                disco_hn="www.discoveryplus.com"
+            fi
+            x_disco_params="realm=$disco_realm,bid=dplus,hn=$disco_hn,hth=$disco_hth"
+        else
+            x_disco_params="realm=$disco_realm"
+        fi
+        disco_token=$(curl \
+            --silent \
+            --request GET \
+            --get \
+            --header "x-disco-params: $x_disco_params"\
+            --data-urlencode "realm=$disco_realm" \
+            "https://$disco_host/token" \
+            | jq --raw-output '.data.attributes.token')
+        # if [[ -n "$2" ]]; then
+        #     username="$2"
+        #     echo -n "Enter password for $username: "
+        #     read -s password
+        #     curl \
+        #         --silent \
+        #         --request POST \
+        #         --header "Content-Type: application/json" \
+        #         --header "Authorization: Bearer $disco_token" \
+        #         --header "x-disco-params: $x_disco_params"\
+        #         --data-binary "{\"credentials\":{\"username\":\"$username\",\"password\":\"$password\"}}" \
+        #         "https://$disco_host/login" \
+        #         | jq '.'
+        #
+        # fi
+        export DISCO_TOKEN="$disco_token"
+
+        export DISCO_NAMESPACE="$disco_namespace"
+        export DISCO_REALM="$disco_realm"
+        export DISCO_HTH="$disco_hth"
+    }
+
+    _discoprofile() {
+      _alternative \
+        "args:Disco Environment:(\
+        ap2-prod:dplusapac \
+        ap2-prod:dplusindia \
+        eu1-prod:dmaxde \
+        eu1-prod:dplay_at \
+        eu1-prod:dplay_de \
+        eu1-prod:dplay_dk \
+        eu1-prod:dplay_es \
+        eu1-prod:dplay_fi \
+        eu1-prod:dplay_ie \
+        eu1-prod:dplay_it \
+        eu1-prod:dplay_nl \
+        eu1-prod:dplay_no \
+        eu1-prod:dplay_se \
+        eu1-prod:dplay_uk \
+        eu1-prod:dplaydk \
+        eu1-prod:dplayfi \
+        eu1-prod:dplayno \
+        eu1-prod:dplayse \
+        eu1-prod:hgtv \
+        eu1-prod:questuk \
+        eu1-prod:tlcde \
+        eu2-prod:dplayes \
+        eu2-prod:dplayit \
+        eu2-prod:dplaynl \
+        eu2-prod:loma \
+        eu3-prod:eurosport \
+        us1-prod:dkidses \
+        us1-prod:dkidsonpt \
+        us1-prod:dkidspt \
+        us1-prod:factual \
+        us1-prod:foodnetwork \
+        us1-prod:gcn \
+        us1-prod:go \
+        us1-prod:motortrend \
+        eu-int:dplay \
+        eu1-test:dmaxde \
+        eu1-test:dplay_at \
+        eu1-test:dplay_de \
+        eu1-test:dplay_dk \
+        eu1-test:dplay_es \
+        eu1-test:dplay_fi \
+        eu1-test:dplay_ie \
+        eu1-test:dplay_it \
+        eu1-test:dplay_nl \
+        eu1-test:dplay_no \
+        eu1-test:dplay_se \
+        eu1-test:dplay_uk \
+        eu1-test:dplaydk \
+        eu1-test:dplaydkdev \
+        eu1-test:dplayfi \
+        eu1-test:dplayno \
+        eu1-test:dplayse \
+        eu1-test:eurosport \
+        eu1-test:hgtv \
+        eu1-test:luna \
+        eu1-test:lunadev \
+        eu1-test:questuk \
+        eu1-test:tlcde \
+        eu2-test:dplayes \
+        eu2-test:dplayit \
+        eu2-test:dplaynl \
+        us1-test:dkidses \
+        us1-test:dkidsonpt \
+        us1-test:dkidspt \
+        us1-test:dplayjp \
+        us1-test:dplusindia \
+        us1-test:factual \
+        us1-test:foodnetwork \
+        us1-test:gcn \
+        us1-test:go \
+        us1-test:magnolia \
+        us1-test:motortrend \
+        sonic-test:dplaydk \
+        sonic-test:dplayno \
+        sonic-test:dplayse \
+        sonic-test:eurosport)"
+    }
+    compdef _discoprofile discoprofile
+
+    _disco() {
+      _alternative \
+        "args:Disco CLI paths:(\
+        '/cms/articles/:id include=default' \
+        /cms/collections/:id \
+        /cms/configs/:id \
+        /cms/links/:id \
+        /cms/rawContents/:id \
+        /cms/recommendations/nextVideos \
+        '/cms/routes/:routePath include=default' \
+        /content/channels/:alternateId \
+        /content/channels/:id \
+        /content/genres \
+        /content/genres/:alternateId \
+        /content/genres/:id \
+        /content/serverTime \
+        '/content/showletters filter[letter]=:letters' \
+        /content/shows \
+        /content/shows/:alternateId \
+        /content/shows/:id \
+        /content/videos \
+        /content/videos/:id \
+        '/content/videos/:id/next algorithm=:algorithm' \
+        /content/videos/:showAlternateId/:videoAlternateId \
+        /content/videos/:showAlternateId/activeVideoForShow \
+        /contentrestrictions/levels \
+        /entitlements/userEntitlementsSummary/me \
+        /legal/consents \
+        /legal/consents/:id \
+        /legal/terms \
+        /legal/terms/:id \
+        /monetization/priceplans/:id \
+        /monetization/products \
+        /monetization/products/:id \
+        /monetization/products/:id/addons \
+        /monetization/subscriptions \
+        /monetization/subscriptions/:id \
+        /packages \
+        '/playback/channelPlaybackInfo/channelId usePreAuth=true' \
+        '/playback/channelPlaybackInfo/sourceSystemId/channelSsid usePreAuth=true' \
+        /playback/history \
+        '/playback/videoPlaybackInfo/:videoId usePreAuth=true' \
+        '/playback/videoPlaybackInfo/sourceSystemId/videoSsid usePreAuth=true' \
+        /settings/languageTags \
+        '/token realm=:realm' \
+        /users/me \
+        /users/me/details \
+        '/users/me/favorites/:type include=default' \
+        '/users/me/favorites include=default' \
+        /users/me/profiles \
+        /users/me/profiles/:id \
+        /users/me/profiles/:id/pin \
+        /users/me/profiles/selected \
+        /users/me/tokens)"
+    }
+    compdef _disco disco
 fi
 
 if [ $commands[bw] ]; then
@@ -428,7 +638,8 @@ fi
 
 if [ $commands[nix-shell] ]; then
     nixzsh()  {
-        nix-shell "$HOME/nix-shells/$1" --run zsh
+        nix-shell -I /nix/var/nix/profiles/per-user/andreas/channels-13-link/unstable "$HOME/nix-shells/$1" --run zsh
+        # nix-shell "$HOME/nix-shells/$1" --run zsh
     }
 
     _nixzsh() {
